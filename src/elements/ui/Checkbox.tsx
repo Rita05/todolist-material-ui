@@ -7,7 +7,7 @@ import s from './Checkbox.module.css';
 
 type CheckboxPropsType = {
 	id: string
-	label: string
+	label?: string
 	className?: string
 	isChecked: boolean
 	onChange: (event: ChangeEvent<HTMLInputElement>) => void

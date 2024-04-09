@@ -1,8 +1,9 @@
+import { MouseEvent } from "react"
 
 type ButtonPropsType = {
 	title: string
 	className?: string
-	onClick?: () => void
+	onClick?: (event: MouseEvent<HTMLButtonElement>) => void
 	isDisabled?: boolean
 }
 

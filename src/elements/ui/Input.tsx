@@ -1,12 +1,14 @@
-import React, { ChangeEvent, KeyboardEvent, RefObject } from 'react';
+import React, { ChangeEvent, KeyboardEvent, FocusEvent, RefObject } from 'react';
 
 type InputPropsType = {
     inputRef?: RefObject<HTMLInputElement>,
-    placeholder: string,
+    placeholder?: string,
     value?: string,
     className?: string
     onChange: (event: ChangeEvent<HTMLInputElement>) => void,
-    onKeyUp: (event: KeyboardEvent<HTMLInputElement>) => void
+    onKeyUp?: (event: KeyboardEvent<HTMLInputElement>) => void,
+    onBlur?: (event: FocusEvent<HTMLInputElement>) => void
+    autoFocus?: boolean
 }
 
 export const Input = (props: InputPropsType) => {
@@ -16,7 +18,9 @@ export const Input = (props: InputPropsType) => {
         placeholder,
         value,
         onChange,
-        onKeyUp
+        onKeyUp,
+        onBlur,
+        autoFocus
     } = props;
     return (
         <input
@@ -26,6 +30,8 @@ export const Input = (props: InputPropsType) => {
             value={value}
             onChange={onChange}
             onKeyUp={onKeyUp}
+            onBlur={onBlur}
+            autoFocus
         />
     )
 }
