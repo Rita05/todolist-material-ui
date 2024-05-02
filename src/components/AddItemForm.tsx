@@ -1,11 +1,6 @@
 import { ChangeEvent, KeyboardEvent, useState } from "react";
 import { styled } from '@mui/material/styles';
 
-//components
-// import { Button } from "../elements/ui/Button";
-import { Input } from "../elements/ui/Input";
-
-
 //components/mui
 import Button, { ButtonProps } from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -14,7 +9,10 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 
 //styles
 import s from './AddItemForm.module.css';
-import { getAddFormIconSx } from "../pages/TodoList.styles";
+import { getAddFormButtonSX, getAddFormIconSX, inputAddItemFormSX } from "../pages/TodoList.styles";
+
+//hooks
+import { useTheme } from '@mui/material/styles';
 
 export type AddItemFormPropsType = {
 	addItem: (title: string) => void
@@ -27,6 +25,7 @@ export const AddItemForm = (props: AddItemFormPropsType) => {
 
 	const inputItemLength = inputValue.length;
 
+	const theme = useTheme();
 
 	const ColorButton = styled(Button)<ButtonProps>(({ theme }) => ({
 		color: theme.palette.getContrastText('#6C63FF'),
@@ -62,29 +61,23 @@ export const AddItemForm = (props: AddItemFormPropsType) => {
 
 	return (
 		<div className={s.addItemFormContainer}>
-			{/* <Input
-				className={errors.length > 0 ? s.error : ''}
-				placeholder={'Enter task'}
-				value={inputValue}
-				onChange={handleInputChange}
-				onKeyUp={handleAddItemOnKeyUp}
-			/> */}
 			<TextField
 				label={'Enter task'}
+				value={inputValue}
+				sx={inputAddItemFormSX}
 				variant={'outlined'}
 				error={errors.length > 0}
-				// className={errors.length > 0 ? s.error : ''}
-				value={inputValue}
 				size={'small'}
 				onChange={handleInputChange}
 				onKeyUp={handleAddItemOnKeyUp}
 				helperText={errors}
 			/>
 			<IconButton
+				sx={getAddFormButtonSX(theme)}
 				onClick={handleAddItem}
-				color={'primary'}
+				disabled={errors.length > 0}
 			>
-				<AddBoxIcon sx={getAddFormIconSx()} />
+				<AddBoxIcon sx={getAddFormIconSX()} />
 			</IconButton>
 			{/* <ColorButton
 				variant="contained"
@@ -93,14 +86,6 @@ export const AddItemForm = (props: AddItemFormPropsType) => {
 			>
 				+
 			</ColorButton> */}
-			{/* <Button title={'+'} onClick={handleAddItem} isDisabled={errors.length > 0} /> */}
-			{/* <div>
-				{errors.length > 0 && (
-					errors.map((error) => (
-						<div className={s.errorMessage}>{error}</div>
-					))
-				)}
-			</div> */}
 		</div>
 	)
 }

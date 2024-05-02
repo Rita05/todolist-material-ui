@@ -1,274 +1,222 @@
 
 import { ChangeEvent, MouseEvent } from "react";
-import classNames from 'classnames';
-import { styled } from '@mui/material/styles';
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
+	DndContext,
+	closestCenter,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
+	DragEndEvent,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
+	arrayMove,
+	sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 
 //components
-// import { Button } from "../elements/ui/Button";
-// import { Checkbox } from "../elements/ui/Checkbox";
 import { AddItemForm } from "../components/AddItemForm";
-import { DraggableContainer } from "../components/DraggableTask";
+import { SortableWrapper } from "./SortableWrapper";
 import { EditableSpan } from "../components/EditableSpan";
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import { TodoListItem } from "./TodoListItem";
 
 
 //components mui
+import List from '@mui/material/List';
 import IconButton from '@mui/material/IconButton'
 import DeleteIcon from '@mui/icons-material/Delete'
-import Button, { ButtonProps } from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import Box from '@mui/material/Box';
 import { StatusButton } from "../elements/material/StatusButton";
 
 //css 
 import s from './TodoList.module.css';
-import { filterButtonContainerSX, getListItemSX } from "./TodoList.styles";
+import { statusButtonsGroupSX } from "./TodoList.styles";
 
 //types
-import { tasksFilterValuesType } from "./TodoListContainer";
+import { tasksFilterValuesType, TodoListTasksType, TodoListType } from "./TodoListContainer";
+import { useDispatch, useSelector } from "react-redux";
+import { AppRootStateType } from "../model/store";
+import { addTaskAction, changeTaskStatusAction, changeTaskTitleAction, removeTaskAction } from "../model/tasks-actions";
+import { addTodoListAction, changeTodoListStatus, removeTodoListAction } from "../model/todolists-actions";
 
 export type TaskType = {
-  id: string
-  title: string
-  isCompleted: boolean
+	id: string
+	title: string
+	isCompleted: boolean
 }
 
 type TodoListPropsType = {
-  todoLists: any
-  title: string
-  todoListID: string
-  tasksFilter: tasksFilterValuesType
-  tasks: Array<TaskType>
-  addTask: (todoListID: string, title: string) => void
-  updateTaskTitle: (todoListID: string, taskId: string, title: string) => void
-  updateTodoListTitle: (todoListID: string, title: string) => void
-  removeTodoList: (todoListID: string) => void
-  removeTask: (todoListID: string, taskId: string) => void
-  changeFilter: (todoListID: string, filter: tasksFilterValuesType) => void
-  changeTaskStatus: (todoListID: string, id: string, isCompleted: boolean) => void
-  handleDragEndTask: (todoListID: string, newTasks: Array<TaskType>) => void
+	todoList: TodoListType
+	// title: string
+	// todoListID: string
+	// tasksFilter: tasksFilterValuesType
+	// tasks: Array<TaskType>
+	// addTask: (todoListID: string, title: string) => void
+	// updateTaskTitle: (todoListID: string, taskId: string, title: string) => void
+	// updateTodoListTitle: (todoListID: string, title: string) => void
+	// removeTodoList: (todoListID: string) => void
+	// removeTask: (todoListID: string, taskId: string) => void
+	// changeStatus: (todoListID: string, filter: tasksFilterValuesType) => void
+	// changeTaskStatus: (todoListID: string, id: string, isCompleted: boolean) => void
+	// handleDragEndTask: (todoListID: string, newTasks: Array<TaskType>) => void
 }
 
-export const TodoList = (props: TodoListPropsType) => {
+export const TodoList = ({ todoList }: TodoListPropsType) => {
 
-  const {
-    todoLists,
-    title,
-    tasks,
-    todoListID,
-    addTask,
-    updateTaskTitle,
-    updateTodoListTitle,
-    removeTask,
-    removeTodoList,
-    tasksFilter,
-    changeFilter,
-    changeTaskStatus,
-    handleDragEndTask
-  } = props;
+	const { id, status, title } = todoList;
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+	// const {
+	// 	title,
+	// 	tasks,
+	// 	todoListID,
+	// 	addTask,
+	// 	updateTaskTitle,
+	// 	updateTodoListTitle,
+	// 	removeTask,
+	// 	removeTodoList,
+	// 	tasksFilter,
+	// 	changeStatus,
+	// 	changeTaskStatus,
+	// 	handleDragEndTask
+	// } = props;
 
-  const getTodoListTasks = () => {
+	const sensors = useSensors(
+		useSensor(PointerSensor),
+		useSensor(KeyboardSensor, {
+			coordinateGetter: sortableKeyboardCoordinates,
+		})
+	);
 
-    if (tasksFilter === 'active') {
-      return tasks.filter(task => !task.isCompleted);
-    }
+	// let todoList = useSelector<AppRootStateType, Array<TodoListType>>(state => state.todolists.filter(list => list.id === todoListID));
 
-    if (tasksFilter === 'completed') {
-      return tasks.filter(task => task.isCompleted);
-    }
+	let tasks = useSelector<AppRootStateType, Array<TaskType>>(state => state.tasks[id]);
 
-    return tasks;
-  }
+	let dispatch = useDispatch();
 
-  const filteredTodoListTasks = getTodoListTasks();
+	const getTodoListTasks = () => {
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = filteredTodoListTasks.findIndex((task) => task.id === active.id);
-      const newIndex = filteredTodoListTasks.findIndex((task) => task.id === over?.id);
-      const newTasks = arrayMove(filteredTodoListTasks, oldIndex, newIndex);
-      handleDragEndTask(todoListID, newTasks);
-    }
-  };
+		if (status === 'active') {
+			return tasks.filter(task => !task.isCompleted);
+		}
 
-  const handleRemoveTask = (event: MouseEvent<HTMLButtonElement>, taskId: string) => {
-    event.stopPropagation();
-    removeTask(todoListID, taskId);
-  }
+		if (status === 'completed') {
+			return tasks.filter(task => task.isCompleted);
+		}
 
-  const handleTaskStatusChange = (event: ChangeEvent<HTMLInputElement>, taskId: string) => {
-    event.stopPropagation();
-    const { checked } = event.currentTarget;
-    changeTaskStatus(todoListID, taskId, checked);
-  }
+		return tasks;
+	}
 
-  const handleUpdateTaskTitle = (taskId: string, title: string) => {
-    updateTaskTitle(todoListID, taskId, title);
-  }
+	const filteredTodoListTasks = getTodoListTasks();
 
-  const tasksList: JSX.Element = filteredTodoListTasks.length === 0
-    ? <span>Tasks list is empty</span>
-    :
-    <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToParentElement]} onDragEnd={handleDragEnd}>
-      <SortableContext items={filteredTodoListTasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-        {/* <ul> */}
-        <List>
-          {filteredTodoListTasks.map(({ id, title, isCompleted }: TaskType) => {
-            return (
-              <DraggableContainer key={id} id={id}>
-                <ListItem key={id}
-                  sx={getListItemSX(isCompleted)}
-                  className={s.taskItem}
-                >
-                  <div>
-                    <Checkbox checked={isCompleted} onChange={(event) => handleTaskStatusChange(event, id)} />
-                    <EditableSpan title={title} onChange={(title) => handleUpdateTaskTitle(id, title)} />
-                  </div>
-                  {/* <li className={s.taskItem}> */}
-                  {/* <Checkbox
-                    id={id}
-                    isChecked={isCompleted}
-                    onChange={(event) => handleTaskStatusChange(event, id)}
-                  /> */}
-                  <IconButton onClick={(event) => handleRemoveTask(event, id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                  {/* <Button title={'x'} onClick={(event) => handleRemoveTask(event, id)} /> */}
-                </ListItem>
-                {/* <li /> */}
-              </DraggableContainer>
-            )
-          })}
-        </List>
-        {/* </ul> */}
-      </SortableContext>
-    </DndContext >
+	const handleDragEnd = (event: DragEndEvent) => {
+		const { active, over } = event;
+		if (over && active.id !== over.id) {
+			const oldIndex = filteredTodoListTasks.findIndex((task) => task.id === active.id);
+			const newIndex = filteredTodoListTasks.findIndex((task) => task.id === over?.id);
+			const newTasks = arrayMove(filteredTodoListTasks, oldIndex, newIndex);
+			// handleDragEndTask(todoListID, newTasks);
+		}
+	};
 
-  const handleChangeTasksFilter = (filter: tasksFilterValuesType) => () => changeFilter(todoListID, filter);
+	const handleRemoveTask = (event: MouseEvent<HTMLButtonElement>, taskId: string) => {
+		event.stopPropagation();
+		dispatch(removeTaskAction(id, taskId));
+		// removeTask(todoListID, taskId);
+	}
 
-  const handleRemoveTodoList = () => {
-    removeTodoList(todoListID);
-  }
+	const handleTaskStatusChange = (event: ChangeEvent<HTMLInputElement>, taskId: string) => {
+		event.stopPropagation();
+		const { checked } = event.currentTarget;
+		dispatch(changeTaskStatusAction(taskId, checked, id));
+		// changeTaskStatus(todoListID, taskId, checked);
+	}
 
-  const handleAddTask = (title: string) => {
-    addTask(todoListID, title);
-  }
+	const handleUpdateTaskTitle = (taskId: string, title: string) => {
+		dispatch(changeTaskTitleAction(id, taskId, title));
+		// updateTaskTitle(todoListID, taskId, title);
+	}
 
-  const handleUpdateTodoListTitle = (title: string) => {
-    updateTodoListTitle(todoListID, title);
-  }
+	const tasksList: JSX.Element = filteredTodoListTasks.length === 0
+		? <span>Tasks list is empty</span>
+		:
+		<DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToParentElement]} onDragEnd={handleDragEnd}>
+			<SortableWrapper items={filteredTodoListTasks.map(task => task.id)}>
+				<List>
+					{filteredTodoListTasks.map(({ id, title, isCompleted }: TaskType) => {
+						return (
+							<TodoListItem
+								id={id}
+								title={title}
+								isCompleted={isCompleted}
+								onTaskStatusChange={handleTaskStatusChange}
+								onUpdateTaskTitle={handleUpdateTaskTitle}
+								onRemoveTask={handleRemoveTask}
+							/>
+						)
+					})}
+				</List>
+			</SortableWrapper>
+		</DndContext >
 
-  // const CustomButton = styled(Button)(({ theme, active: any }) => ({
-  //   '&.MuiButton-text': {
-  //     color: theme.palette.text.primary,
-  //   },
-  //   ...(active && {
-  //     backgroundColor: 'blue',
-  //     color: 'white',
-  //     '&:hover': {
-  //       backgroundColor: 'darkblue',
-  //     },
-  //   }),
-  // }));
+	const handleChangeTasksStatus = (filter: tasksFilterValuesType) => () => dispatch(changeTodoListStatus(id, filter));
 
-  return (
-    // <div className={s.todolistContainer}>
-    <div>
-      <div className={s.todolistContainerTitle}>
-        <h3>
-          <EditableSpan
-            className={''}
-            title={title}
-            onChange={handleUpdateTodoListTitle}
-          />
-        </h3>
-        <IconButton onClick={handleRemoveTodoList}>
-          <DeleteIcon />
-        </IconButton>
-        {/* <Button title={'x'} onClick={handleRemoveTodoList} /> */}
-      </div>
-      <AddItemForm addItem={handleAddTask} />
-      {tasksList}
-      <Box
-        sx={filterButtonContainerSX}
-      >
-        {/* <div className={s.statusesButtonGroup}> */}
-        <StatusButton
-          isActive={tasksFilter === 'all'}
-          variant="text"
-          onClick={handleChangeTasksFilter('all')}
-        >
-          {'all'}
-        </StatusButton>
-        {/* <Button
-          title={'All'}
-          className={
-            classNames(
-              s.filterButton,
-              [tasksFilter === 'all' ? s.activeButton : '']
-            )}
-          onClick={handleChangeTasksFilter('all')}
-        /> */}
-        {/* <Button
-          title={'Active'}
-          className={
-            classNames(
-              s.filterButton,
-              [tasksFilter === 'active' ? s.activeButton : '']
-            )}
-          onClick={handleChangeTasksFilter('active')}
-        /> */}
-        <StatusButton
-          isActive={tasksFilter === 'active'}
-          variant="text"
-          onClick={handleChangeTasksFilter('active')}
-        >
-          {'active'}
-        </StatusButton>
-        <StatusButton
-          isActive={tasksFilter === 'completed'}
-          variant="text"
-          onClick={handleChangeTasksFilter('completed')}
-        >
-          {'completed'}
-        </StatusButton>
-        {/* <Button
-          title={'Completed'}
-          className={
-            classNames(
-              s.filterButton,
-              [tasksFilter === 'completed' ? s.activeButton : '']
-            )}
-          onClick={handleChangeTasksFilter('completed')}
-        /> */}
-      </Box>
-      {/* </div> */}
-    </div >
-  )
+	const handleRemoveTodoList = () => {
+		dispatch(removeTodoListAction(id));
+		// removeTodoList(todoListID);
+	}
+
+	const handleAddTask = (title: string) => {
+		// dispatch(addTaskAction())
+		dispatch((addTaskAction(title, id)));
+		// addTask(todoListID, title);
+	}
+
+	const handleUpdateTodoListTitle = (title: string) => {
+		// updateTodoListTitle(todoListID, title);
+	}
+
+	return (
+		<div>
+			<div className={s.todolistContainerTitle}>
+				<h3>
+					<EditableSpan
+						className={''}
+						title={title}
+						onChange={handleUpdateTodoListTitle}
+					/>
+				</h3>
+				<IconButton onClick={handleRemoveTodoList}>
+					<DeleteIcon />
+				</IconButton>
+			</div>
+			<AddItemForm addItem={handleAddTask} />
+			{tasksList}
+			<Box
+				sx={statusButtonsGroupSX}
+			>
+				<StatusButton
+					isActive={status === 'all'}
+					variant="text"
+					onClick={handleChangeTasksStatus('all')}
+				>
+					{'all'}
+				</StatusButton>
+				<StatusButton
+					isActive={status === 'active'}
+					variant="text"
+					onClick={handleChangeTasksStatus('active')}
+				>
+					{'active'}
+				</StatusButton>
+				<StatusButton
+					isActive={status === 'completed'}
+					variant="text"
+					onClick={handleChangeTasksStatus('completed')}
+				>
+					{'completed'}
+				</StatusButton>
+			</Box>
+		</div >
+	)
 }

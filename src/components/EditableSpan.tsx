@@ -1,5 +1,4 @@
 import { ChangeEvent, useState } from "react";
-// import { Input } from "../elements/ui/Input";
 
 //components/mui
 import TextField from '@mui/material/TextField';
@@ -34,22 +33,21 @@ export const EditableSpan = (props: EditableSpanPropsType) => {
 		<>
 			{
 				isEdit
-					// ? <Input
-					// 	value={inputTitle}
-					// 	onChange={handleChangeInput}
-					// 	onBlur={handleEditMode}
-					// 	autoFocus
-					// />
 					?
 					< TextField
 						label={'Enter task'}
 						variant={'outlined'}
-						// className={errors.length > 0 ? s.error : ''}
 						value={inputTitle}
 						size={'small'}
 						onChange={handleChangeInput}
 						onBlur={handleEditMode}
 						autoFocus
+						InputLabelProps={{
+							sx: {
+								top: '-5px',
+							}
+						}}
+
 					/>
 					: <span onDoubleClick={handleEditMode}>{title}</span>
 			}

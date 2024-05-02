@@ -1,11 +1,11 @@
-import { styled } from '@mui/material/styles'
+import { styled, Theme } from '@mui/material/styles'
 
 //components/mui
 import Button from '@mui/material/Button'
 
 type MenuButtonProps = {
     background?: string
-    theme?: any
+    theme?: Theme
 }
 
 export const MenuButton = styled(Button)<MenuButtonProps>(({ background, theme }) => ({

@@ -1,32 +1,41 @@
-import * as React from 'react';
+//elements/mui
+import React from 'react';
 import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Switch from '@mui/material/Switch';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useTheme } from '@mui/material/styles';
+import { MenuButton } from '../elements/material/MenuButton';
 
-export default function ButtonAppBar() {
+//styles
+import { statusButtonsGroupSX } from '../pages/TodoList.styles';
+
+type CustomAppBarPropsType = {
+	onChangeTheme: () => void;
+};
+
+export const ButtonAppBar = ({ onChangeTheme }: CustomAppBarPropsType) => {
+	const theme = useTheme();
+
 	return (
-		<Box sx={{ flexGrow: 1 }}>
-			<AppBar position="static">
-				<Toolbar>
-					<IconButton
-						size="large"
-						edge="start"
-						color="inherit"
-						aria-label="menu"
-						sx={{ mr: 2 }}
-					>
-						<MenuIcon />
-					</IconButton>
-					<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-						News
-					</Typography>
-					<Button color="inherit">Login</Button>
-				</Toolbar>
-			</AppBar>
-		</Box>
+		<AppBar position="static" sx={{ mb: '30px' }}>
+			<Toolbar sx={statusButtonsGroupSX}>
+				<IconButton
+					color="inherit"
+				>
+					<MenuIcon />
+				</IconButton>
+				<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+				</Typography>
+				<div>
+					<MenuButton background={theme.palette.primary.light}>Login</MenuButton>
+					<MenuButton background={theme.palette.primary.light}>Logout</MenuButton>
+					<MenuButton background={theme.palette.primary.dark}>Faq</MenuButton>
+					<Switch onChange={onChangeTheme} color={'default'} />
+				</div>
+			</Toolbar>
+		</AppBar>
 	);
-}
+};

@@ -9,21 +9,13 @@ import { AddItemForm } from '../components/AddItemForm';
 import { TaskType } from './TodoList';
 
 //components/mui
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { MenuButton } from '../elements/material/MenuButton';
-import Switch from '@mui/material/Switch';
+import { ButtonAppBar } from '../components/ButtonAppBar';
 
 //styles
-import { filterButtonContainerSX } from './TodoList.styles';
-import CssBaseline from '@mui/material/CssBaseline'
+import CssBaseline from '@mui/material/CssBaseline';
 
 
 export type tasksFilterValuesType = 'all' | 'active' | 'completed';
@@ -31,13 +23,13 @@ export type tasksFilterValuesType = 'all' | 'active' | 'completed';
 
 type ThemeMode = 'dark' | 'light'
 
-type TodoListType = {
+export type TodoListType = {
 	id: string
 	title: string
 	status: tasksFilterValuesType
 }
 
-type TodoListTasksType = {
+export type TodoListTasksType = {
 	[key: string]: TaskType[]
 }
 
@@ -49,11 +41,8 @@ export const TodoListContainer = () => {
 		palette: {
 			mode: themeMode === 'light' ? 'light' : 'dark',
 			primary: {
-				// main: 'purple'
-				// main: '#827cfa'
 				main: '#6C63FF'
 			},
-			// secondary: 'purple',
 		},
 	});
 
@@ -85,13 +74,17 @@ export const TodoListContainer = () => {
 		setTasks({ ...tasks, [newTodoListID]: [] });
 	}
 
-
 	const removeTodoList = (todoListID: string) => {
 		setTodoLists(todoLists.filter(list => list.id !== todoListID));
 		delete tasks[todoListID];
 		setTasks({ ...tasks });
 	}
 
+	const updateTodoListTitle = (todolistId: string, title: string) => {
+		setTodoLists(todoLists.map((list) => list.id === todolistId
+			? { ...list, title: title }
+			: list));
+	}
 
 	const removeTask = (todoListID: string, taskId: string) => {
 		setTasks({ ...tasks, [todoListID]: tasks[todoListID].filter(task => task.id !== taskId) });
@@ -107,21 +100,15 @@ export const TodoListContainer = () => {
 		setTasks({ ...tasks, [todoListID]: [newTask, ...tasks[todoListID]] });
 	}
 
-	const updateTaskTitle = (todoListId: string, taskId: string, title: string) => {
+	const updateTaskTitle = (todolistId: string, taskId: string, title: string) => {
 		setTasks({
-			...tasks, [todoListId]: tasks[todoListId].map((task) => task.id === taskId
+			...tasks, [todolistId]: tasks[todolistId].map((task) => task.id === taskId
 				? { ...task, title }
 				: task)
 		});
 	}
 
-	const updateTodoListTitle = (todoListId: string, title: string) => {
-		setTodoLists(todoLists.map((list) => list.id === todoListId
-			? { ...list, title: title }
-			: list));
-	}
-
-	const onChangeFilter = (todoListID: string, status: tasksFilterValuesType) => {
+	const handleChangeStatus = (todoListID: string, status: tasksFilterValuesType) => {
 		setTodoLists(todoLists.map(list => (list.id === todoListID
 			? { ...list, status }
 			: list
@@ -139,7 +126,7 @@ export const TodoListContainer = () => {
 	}
 
 	const handleChangeTheme = () => {
-		setThemeMode(themeMode == 'light' ? 'dark' : 'light')
+		setThemeMode(themeMode == 'light' ? 'dark' : 'light');
 	}
 
 	const handleDragEndTask = (todoListID: string, newTasks: Array<TaskType>) => {
@@ -151,25 +138,8 @@ export const TodoListContainer = () => {
 
 	return (
 		<ThemeProvider theme={theme}>
-			{/* <ButtonAppBar /> */}
 			<CssBaseline />
-			<AppBar position="static" sx={{ mb: '30px' }}>
-				<Toolbar sx={filterButtonContainerSX}>
-					<IconButton
-						color="inherit"
-					>
-						<MenuIcon />
-					</IconButton>
-					<Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-					</Typography>
-					<div>
-						<MenuButton background={theme.palette.primary.light}>Login</MenuButton>
-						<MenuButton background={theme.palette.primary.light}>Logout</MenuButton>
-						<MenuButton background={theme.palette.primary.dark}>Faq</MenuButton>
-						<Switch onChange={handleChangeTheme} />
-					</div>
-				</Toolbar>
-			</AppBar>
+			<ButtonAppBar onChangeTheme={handleChangeTheme} />
 			<Container fixed>
 				<Grid container sx={{ mb: '30px' }}>
 					<AddItemForm addItem={addTodoList} />
@@ -178,10 +148,9 @@ export const TodoListContainer = () => {
 					{
 						todoLists.map(({ id, title, status }) => {
 							return (
-								<Grid item sx={{ m: '10px' }}>
-									<Paper elevation={3} sx={{ p: '20px' }}>
-										<TodoList
-											todoLists={todoLists}
+								<Grid item>
+									<Paper elevation={3} sx={{ p: '20px', mr: '20px', mb: '20px' }}>
+										{/* <TodoList
 											key={id}
 											todoListID={id}
 											title={title}
@@ -192,10 +161,10 @@ export const TodoListContainer = () => {
 											addTask={addTask}
 											updateTaskTitle={updateTaskTitle}
 											updateTodoListTitle={updateTodoListTitle}
-											changeFilter={onChangeFilter}
+											changeStatus={handleChangeStatus}
 											changeTaskStatus={onChangeTaskStatus}
 											handleDragEndTask={handleDragEndTask}
-										/>
+										/> */}
 									</Paper>
 								</Grid>
 							)
@@ -206,3 +175,5 @@ export const TodoListContainer = () => {
 		</ThemeProvider>
 	)
 }
+
+// export { }
